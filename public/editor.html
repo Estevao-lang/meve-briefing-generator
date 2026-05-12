@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Automatizador de Briefing - Me Vê Um Site</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #050914;
+      color: #eff7ff;
+      --panel: #09111f;
+      --panel-strong: #0d1728;
+      --line: rgba(122, 210, 255, .22);
+      --text: #eff7ff;
+      --muted: #a8bfd7;
+      --cyan: #38cfff;
+      --green: #63f2b6;
+      --danger: #ff9f9f;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: linear-gradient(135deg, #050914, #081527 62%, #07100e); }
+    button, input, textarea, select { font: inherit; }
+    button, a.button-link {
+      min-height: 42px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #0b2038;
+      color: var(--text);
+      padding: 10px 14px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 750;
+    }
+    button:hover, a.button-link:hover { border-color: rgba(56, 207, 255, .75); background: #0f2b4a; }
+    button:disabled { opacity: .58; cursor: wait; }
+    button.primary { border-color: transparent; background: var(--cyan); color: #04131e; }
+    button.primary:hover { background: #68dcff; }
+    button.success { border-color: transparent; background: var(--green); color: #041610; }
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #070f1b;
+      color: var(--text);
+      padding: 11px 12px;
+      outline: none;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(56, 207, 255, .12); }
+    textarea { min-height: 104px; resize: vertical; line-height: 1.45; }
+    label { display: grid; gap: 7px; color: var(--muted); font-size: 13px; font-weight: 700; }
+    code { color: var(--green); }
+    .app-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: center;
+      padding: 20px 26px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(5, 12, 24, .9);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      backdrop-filter: blur(14px);
+    }
+    .app-header h1 { margin: 0; font-size: 24px; letter-spacing: 0; }
+    .app-header p { margin: 6px 0 0; color: var(--muted); }
+    .file-tools { display: grid; grid-template-columns: 220px 190px auto; gap: 10px; align-items: end; }
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(560px, 1.05fr) minmax(420px, .95fr);
+      gap: 22px;
+      padding: 22px;
+    }
+    .editor-panel, .preview-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(8, 17, 31, .88);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, .22);
+    }
+    .editor-panel { padding: 18px; }
+    .preview-panel {
+      padding: 16px;
+      position: sticky;
+      top: 92px;
+      height: calc(100vh - 114px);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 14px;
+    }
+    form { display: grid; gap: 18px; }
+    .block {
+      border: 1px solid rgba(122, 210, 255, .16);
+      border-radius: 8px;
+      background: rgba(7, 14, 25, .76);
+      padding: 16px;
+    }
+    .block h2, .preview-panel h2 { margin: 0 0 14px; font-size: 17px; letter-spacing: 0; }
+    .inputs { display: grid; gap: 13px; }
+    .row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: end; }
+    .row.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .button-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .array-list { display: grid; gap: 9px; margin: 9px 0 10px; }
+    .array-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+    .array-item button, .module-item button { min-width: 42px; padding: 8px 11px; color: #ffd8d8; }
+    .module-item {
+      display: grid;
+      grid-template-columns: minmax(160px, .8fr) minmax(220px, 1.2fr) 120px auto;
+      gap: 9px;
+      align-items: end;
+      border: 1px solid rgba(122, 210, 255, .14);
+      border-radius: 8px;
+      background: rgba(3, 10, 19, .62);
+      padding: 10px;
+    }
+    .status { min-height: 22px; margin: 0; color: var(--muted); font-size: 14px; }
+    .note { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
+    iframe { width: 100%; height: 100%; border: 1px solid var(--line); border-radius: 8px; background: #020814; }
+    .preview-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 1100px) {
+      .app-header { grid-template-columns: 1fr; }
+      .file-tools { grid-template-columns: 1fr; }
+      .shell { grid-template-columns: 1fr; }
+      .preview-panel { position: static; height: 760px; }
+      .module-item, .row, .row.three { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>Automatizador de Briefing</h1>
+      <p>Cole o texto do cliente, gere a estrutura, revise os campos e exporte PDF/PNG.</p>
+    </div>
+    <div class="file-tools">
+      <label>Briefing<select id="briefing-select"></select></label>
+      <label>Novo arquivo<input id="briefing-file-name" type="text" placeholder="cliente.json" /></label>
+      <button type="button" id="create-file">Criar</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="editor-panel">
+      <form id="briefing-form">
+        <section class="block">
+          <h2>Entrada Automática</h2>
+          <div class="inputs">
+            <label>Texto ou markdown do cliente<textarea id="markdown-input" rows="12"></textarea></label>
+            <div class="row">
+              <label>Arquivo de destino<input id="automation-file-name" type="text" placeholder="cliente.json" /></label>
+              <div class="button-row">
+                <button type="button" id="interpret-markdown">Interpretar</button>
+                <button type="button" id="automate-markdown" class="success">Automatizar</button>
+              </div>
+            </div>
+            <p class="note">Interpretar preenche o formulário. Automatizar interpreta, salva, gera PDF/PNG e atualiza o preview.</p>
+          </div>
+        </section>
+
+        <section class="block">
+          <h2>Marca</h2>
+          <div class="inputs">
+            <div class="row">
+              <label>Nome<input id="brand-name" type="text" /></label>
+              <label>Website<input id="brand-website" type="text" /></label>
+            </div>
+            <label>Logo<input id="brand-logoPath" type="text" /></label>
+            <div class="row">
+              <label>Mensagem prefixo<textarea id="brand-mainMessagePrefix"></textarea></label>
+              <label>Mensagem destacada<textarea id="brand-mainMessageHighlight"></textarea></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="block">
+          <h2>Negócio alvo</h2>
+          <div class="inputs">
+            <div class="row">
+              <label>Nome do cliente ou negócio<input id="target-name" type="text" /></label>
+              <label>Segmento<input id="target-segment" type="text" /></label>
+            </div>
+            <label>Contexto do negócio<textarea id="target-context"></textarea></label>
+          </div>
+        </section>
+
+        <section class="block">
+          <h2>Capa</h2>
+          <div class="inputs">
+            <div class="row three">
+              <label>Título linha 1<input id="cover-titleLine1" type="text" /></label>
+              <label>Título linha 2<input id="cover-titleLine2" type="text" /></label>
+              <label>Subtítulo<input id="cover-subtitle" type="text" /></label>
+            </div>
+            <div>
+              <strong>Recursos</strong>
+              <div class="array-list" id="cover-features"></div>
+              <button type="button" id="add-feature">Adicionar recurso</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="block">
+          <h2>Sobre</h2>
+          <div class="inputs">
+            <label>Quem somos<textarea id="about-company"></textarea></label>
+            <label>Objetivo<textarea id="about-objective"></textarea></label>
+            <div>
+              <strong>Dores</strong>
+              <div class="array-list" id="about-pains"></div>
+              <button type="button" id="add-pain">Adicionar dor</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="block">
+          <h2>Módulos</h2>
+          <div class="array-list" id="modules-list"></div>
+          <button type="button" id="add-module">Adicionar módulo</button>
+          <p class="note">Ícones aceitos: <code>users</code>, <code>building</code>, <code>file</code>, <code>chart</code>, <code>target</code>, <code>gear</code>, <code>hardhat</code>, <code>rocket</code>.</p>
+        </section>
+
+        <section class="block">
+          <h2>Benefícios</h2>
+          <div class="array-list" id="benefits-list"></div>
+          <button type="button" id="add-benefit">Adicionar benefício</button>
+        </section>
+
+        <section class="block">
+          <h2>MVP</h2>
+          <div class="array-list" id="mvp-list"></div>
+          <button type="button" id="add-mvp">Adicionar item</button>
+        </section>
+
+        <section class="block">
+          <h2>Fechamento</h2>
+          <div class="inputs">
+            <label>Subtítulo dos módulos<input id="proposal-modulesSubtitle" type="text" /></label>
+            <label>Frase final<textarea id="proposal-closingQuote"></textarea></label>
+            <div class="row">
+              <label>CTA início<input id="proposal-ctaLead" type="text" /></label>
+              <label>CTA destaque<input id="proposal-ctaHighlight" type="text" /></label>
+            </div>
+          </div>
+        </section>
+
+        <div class="button-row">
+          <button type="submit">Salvar</button>
+          <button type="button" id="generate-button" class="primary">Salvar e Gerar</button>
+        </div>
+        <p class="status" id="status-text">Carregando dados...</p>
+      </form>
+    </section>
+
+    <aside class="preview-panel">
+      <h2>Preview</h2>
+      <iframe id="preview-frame" src="/dist/briefing/briefing.html" title="Preview do briefing"></iframe>
+      <div class="preview-actions">
+        <a id="download-pdf" class="button-link" href="/dist/briefing/briefing-comercial.pdf" target="_blank">Abrir PDF</a>
+        <a id="open-html" class="button-link" href="/dist/briefing/briefing.html" target="_blank">Abrir HTML</a>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const elements = {
+      briefingSelect: document.getElementById("briefing-select"),
+      newFileName: document.getElementById("briefing-file-name"),
+      createFile: document.getElementById("create-file"),
+      automationFileName: document.getElementById("automation-file-name"),
+      markdownInput: document.getElementById("markdown-input"),
+      interpretMarkdown: document.getElementById("interpret-markdown"),
+      automateMarkdown: document.getElementById("automate-markdown"),
+      brandName: document.getElementById("brand-name"),
+      brandWebsite: document.getElementById("brand-website"),
+      brandLogoPath: document.getElementById("brand-logoPath"),
+      brandPrefix: document.getElementById("brand-mainMessagePrefix"),
+      brandHighlight: document.getElementById("brand-mainMessageHighlight"),
+      targetName: document.getElementById("target-name"),
+      targetSegment: document.getElementById("target-segment"),
+      targetContext: document.getElementById("target-context"),
+      coverTitle1: document.getElementById("cover-titleLine1"),
+      coverTitle2: document.getElementById("cover-titleLine2"),
+      coverSubtitle: document.getElementById("cover-subtitle"),
+      coverFeatures: document.getElementById("cover-features"),
+      aboutCompany: document.getElementById("about-company"),
+      aboutObjective: document.getElementById("about-objective"),
+      aboutPains: document.getElementById("about-pains"),
+      modulesList: document.getElementById("modules-list"),
+      benefitsList: document.getElementById("benefits-list"),
+      mvpList: document.getElementById("mvp-list"),
+      proposalModulesSubtitle: document.getElementById("proposal-modulesSubtitle"),
+      proposalClosingQuote: document.getElementById("proposal-closingQuote"),
+      proposalCtaLead: document.getElementById("proposal-ctaLead"),
+      proposalCtaHighlight: document.getElementById("proposal-ctaHighlight"),
+      statusText: document.getElementById("status-text"),
+      previewFrame: document.getElementById("preview-frame"),
+      downloadPdf: document.getElementById("download-pdf"),
+      openHtml: document.getElementById("open-html"),
+    };
+
+    const sampleMarkdown = `# Eletro House Assistência Técnica
+
+## Negócio alvo
+Nome: Eletro House Assistência Técnica
+Segmento: Assistência técnica
+Contexto: A Eletro House presta manutenção e suporte técnico para clientes que precisam de atendimento rápido, organizado e confiável para seus equipamentos.
+
+## Sobre
+### Objetivo
+Criar uma proposta da Me Vê Um Site para uma plataforma digital que controle clientes, equipamentos, ordens de serviço, orçamentos, técnicos, pagamentos e status de manutenção.
+
+### Dores
+- Atendimentos espalhados no WhatsApp
+- Falta de controle sobre ordens de serviço
+- Orçamentos feitos manualmente
+- Dificuldade para acompanhar o status de cada equipamento
+- Falta de histórico dos clientes
+- Demora para responder clientes sobre andamento do serviço
+
+## Módulos
+### Cadastro de Clientes
+Registro de dados, contatos, histórico de atendimentos e observações internas.
+### Cadastro de Equipamentos
+Controle de tipo, marca, modelo, número de série, defeito informado, fotos e data de entrada.
+### Ordem de Serviço
+Criação de OS com cliente, equipamento, diagnóstico, peças, valor, técnico responsável e prazo.
+### Controle de Status
+Acompanhamento de recebido, em análise, orçamento enviado, aprovado, em manutenção, finalizado e entregue.
+### Geração de Orçamentos
+PDF com descrição do serviço, mão de obra, peças, prazo, pagamento e aprovação do cliente.
+### Painel Administrativo
+Indicadores de OS abertas, serviços finalizados, orçamentos pendentes, receita e técnicos mais ativos.
+
+## Benefícios
+- Centralizar atendimentos em um único lugar
+- Reduzir erros causados por controles manuais
+- Melhorar a comunicação com o cliente
+- Gerar orçamentos mais profissionais
+- Acompanhar melhor os serviços em andamento
+- Ter relatórios da operação
+
+## MVP
+- Cadastro de clientes
+- Cadastro de equipamentos
+- Ordem de serviço
+- Controle de status
+- Geração de orçamento
+- Dashboard administrativo básico`;
+
+    let currentFile = "briefing.json";
+    let currentOutputPath = "/dist/briefing";
+    let busy = false;
+
+    elements.markdownInput.value = sampleMarkdown;
+
+    function createArrayItem(value = "") {
+      const row = document.createElement("div");
+      row.className = "array-item";
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = value;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "Remover";
+      button.addEventListener("click", () => row.remove());
+      row.append(input, button);
+      return row;
+    }
+
+    function createModuleItem(module = {}) {
+      const row = document.createElement("div");
+      row.className = "module-item";
+
+      const title = createLabeledInput("Título", "input", "module-title", module.title || "");
+      const description = createLabeledInput("Descrição", "textarea", "module-description", module.description || "");
+      const icon = createLabeledInput("Ícone", "input", "module-icon", module.icon || "target");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "Remover";
+      button.addEventListener("click", () => row.remove());
+
+      row.append(title, description, icon, button);
+      return row;
+    }
+
+    function createLabeledInput(labelText, type, className, value) {
+      const label = document.createElement("label");
+      label.textContent = labelText;
+      const field = document.createElement(type);
+      field.className = className;
+      field.value = value;
+      if (type === "input") field.type = "text";
+      label.appendChild(field);
+      return label;
+    }
+
+    function addFeature(value = "") { elements.coverFeatures.appendChild(createArrayItem(value)); }
+    function addPain(value = "") { elements.aboutPains.appendChild(createArrayItem(value)); }
+    function addBenefit(value = "") { elements.benefitsList.appendChild(createArrayItem(value)); }
+    function addMvp(value = "") { elements.mvpList.appendChild(createArrayItem(value)); }
+    function addModule(module = {}) { elements.modulesList.appendChild(createModuleItem(module)); }
+
+    function sanitizeFilename(filename) {
+      let cleaned = String(filename || "").trim().replace(/\s+/g, "-").replace(/[^a-zA-Z0-9._-]/g, "");
+      if (!cleaned) return "";
+      if (!cleaned.endsWith(".json")) cleaned += ".json";
+      return cleaned;
+    }
+
+    function getListValues(container, selector = "input") {
+      return Array.from(container.querySelectorAll(selector)).map((field) => field.value.trim()).filter(Boolean);
+    }
+
+    function getModuleValues() {
+      return Array.from(elements.modulesList.querySelectorAll(".module-item")).map((item) => ({
+        title: item.querySelector(".module-title").value.trim(),
+        description: item.querySelector(".module-description").value.trim(),
+        icon: item.querySelector(".module-icon").value.trim() || "target",
+      })).filter((module) => module.title || module.description);
+    }
+
+    function updateStatus(message, isError = false) {
+      elements.statusText.textContent = message;
+      elements.statusText.style.color = isError ? "var(--danger)" : "var(--muted)";
+    }
+
+    function setBusy(value) {
+      busy = value;
+      document.querySelectorAll("button").forEach((button) => {
+        button.disabled = value;
+      });
+    }
+
+    function ensureServerMode() {
+      if (!window.location.protocol.startsWith("http")) {
+        updateStatus("Abra pelo servidor web, por exemplo http://localhost:3000.", true);
+        setBusy(true);
+        return false;
+      }
+      return true;
+    }
+
+    async function fetchBriefings() {
+      const response = await fetch("/api/briefings");
+      if (!response.ok) throw new Error("Não foi possível carregar a lista de briefings.");
+      return response.json();
+    }
+
+    async function fetchBriefing(file = currentFile) {
+      const url = new URL("/api/briefing", window.location.origin);
+      url.searchParams.set("file", file);
+      const response = await fetch(url.href);
+      if (!response.ok) throw new Error("Não foi possível carregar o briefing.");
+      return response.json();
+    }
+
+    async function loadFileList(selected = currentFile) {
+      const data = await fetchBriefings();
+      elements.briefingSelect.innerHTML = "";
+      data.files.forEach((name) => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        elements.briefingSelect.appendChild(option);
+      });
+      if (data.files.includes(selected)) elements.briefingSelect.value = selected;
+      else if (data.files.length) selected = data.files[0];
+      currentFile = selected;
+      return selected;
+    }
+
+    function fillForm(data) {
+      elements.brandName.value = data.brand?.name || "";
+      elements.brandWebsite.value = data.brand?.website || "";
+      elements.brandLogoPath.value = data.brand?.logoPath || "";
+      elements.brandPrefix.value = data.brand?.mainMessagePrefix || "";
+      elements.brandHighlight.value = data.brand?.mainMessageHighlight || "";
+      elements.targetName.value = data.target?.name || "";
+      elements.targetSegment.value = data.target?.segment || "";
+      elements.targetContext.value = data.target?.context || "";
+      elements.coverTitle1.value = data.cover?.titleLine1 || "";
+      elements.coverTitle2.value = data.cover?.titleLine2 || "";
+      elements.coverSubtitle.value = data.cover?.subtitle || "";
+      elements.aboutCompany.value = data.about?.company || "";
+      elements.aboutObjective.value = data.about?.objective || "";
+      elements.proposalModulesSubtitle.value = data.proposal?.modulesSubtitle || "";
+      elements.proposalClosingQuote.value = data.proposal?.closingQuote || "";
+      elements.proposalCtaLead.value = data.proposal?.ctaLead || "";
+      elements.proposalCtaHighlight.value = data.proposal?.ctaHighlight || "";
+
+      elements.coverFeatures.innerHTML = "";
+      elements.aboutPains.innerHTML = "";
+      elements.modulesList.innerHTML = "";
+      elements.benefitsList.innerHTML = "";
+      elements.mvpList.innerHTML = "";
+
+      (data.cover?.features || []).forEach(addFeature);
+      (data.about?.pains || []).forEach(addPain);
+      (data.modules || []).forEach(addModule);
+      (data.benefits || []).forEach(addBenefit);
+      (data.mvp || []).forEach(addMvp);
+    }
+
+    function collectData() {
+      return {
+        brand: {
+          name: elements.brandName.value,
+          website: elements.brandWebsite.value,
+          logoPath: elements.brandLogoPath.value,
+          mainMessagePrefix: elements.brandPrefix.value,
+          mainMessageHighlight: elements.brandHighlight.value,
+        },
+        target: {
+          name: elements.targetName.value,
+          segment: elements.targetSegment.value,
+          context: elements.targetContext.value,
+        },
+        cover: {
+          titleLine1: elements.coverTitle1.value,
+          titleLine2: elements.coverTitle2.value,
+          subtitle: elements.coverSubtitle.value,
+          features: getListValues(elements.coverFeatures),
+        },
+        about: {
+          company: elements.aboutCompany.value,
+          objective: elements.aboutObjective.value,
+          pains: getListValues(elements.aboutPains),
+        },
+        modules: getModuleValues(),
+        benefits: getListValues(elements.benefitsList),
+        mvp: getListValues(elements.mvpList),
+        proposal: {
+          modulesSubtitle: elements.proposalModulesSubtitle.value,
+          closingQuote: elements.proposalClosingQuote.value,
+          ctaLead: elements.proposalCtaLead.value,
+          ctaHighlight: elements.proposalCtaHighlight.value,
+        },
+      };
+    }
+
+    async function requestJson(url, options = {}) {
+      const response = await fetch(url, options);
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || "Falha na requisição.");
+      return payload;
+    }
+
+    async function saveBriefing(data, file = currentFile) {
+      const url = new URL("/api/briefing", window.location.origin);
+      url.searchParams.set("file", file);
+      return requestJson(url.href, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+    }
+
+    async function generateBriefing(file = currentFile) {
+      const url = new URL("/api/generate", window.location.origin);
+      url.searchParams.set("file", file);
+      return requestJson(url.href, { method: "POST" });
+    }
+
+    async function interpretMarkdownContent() {
+      const markdown = elements.markdownInput.value.trim();
+      if (!markdown) throw new Error("Cole o texto antes de interpretar.");
+      const targetFile = sanitizeFilename(elements.automationFileName.value) || currentFile;
+      const url = new URL("/api/interpret", window.location.origin);
+      url.searchParams.set("file", targetFile);
+      return requestJson(url.href, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ markdown, file: targetFile }),
+      });
+    }
+
+    async function automateMarkdownContent() {
+      const markdown = elements.markdownInput.value.trim();
+      if (!markdown) throw new Error("Cole o texto antes de automatizar.");
+      const targetFile = sanitizeFilename(elements.automationFileName.value) || currentFile;
+      return requestJson("/api/automate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ markdown, file: targetFile }),
+      });
+    }
+
+    function refreshPreview() {
+      const timestamp = Date.now();
+      elements.previewFrame.src = `${currentOutputPath}/briefing.html?ts=${timestamp}`;
+      elements.downloadPdf.href = `${currentOutputPath}/briefing-comercial.pdf?ts=${timestamp}`;
+      elements.openHtml.href = `${currentOutputPath}/briefing.html?ts=${timestamp}`;
+    }
+
+    function setCurrentFile(file) {
+      currentFile = file;
+      currentOutputPath = `/dist/${file.replace(/\.json$/, "")}`;
+      elements.automationFileName.value = file;
+      if (Array.from(elements.briefingSelect.options).some((option) => option.value === file)) {
+        elements.briefingSelect.value = file;
+      }
+    }
+
+    async function loadBriefingFile(file) {
+      updateStatus(`Carregando ${file}...`);
+      const payload = await fetchBriefing(file);
+      setCurrentFile(payload.file);
+      fillForm(payload.data);
+      refreshPreview();
+      updateStatus(`${payload.file} carregado.`);
+    }
+
+    async function createNewFile() {
+      const name = sanitizeFilename(elements.newFileName.value);
+      if (!name) throw new Error("Digite um nome de arquivo válido.");
+      const response = await requestJson("/api/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file: name }),
+      });
+      await loadFileList(response.file);
+      setCurrentFile(response.file);
+      fillForm(response.data);
+      elements.newFileName.value = "";
+      updateStatus(`Arquivo ${response.file} criado.`);
+    }
+
+    document.getElementById("add-feature").addEventListener("click", () => addFeature());
+    document.getElementById("add-pain").addEventListener("click", () => addPain());
+    document.getElementById("add-benefit").addEventListener("click", () => addBenefit());
+    document.getElementById("add-mvp").addEventListener("click", () => addMvp());
+    document.getElementById("add-module").addEventListener("click", () => addModule({ title: "", description: "", icon: "target" }));
+
+    elements.createFile.addEventListener("click", async () => {
+      if (busy) return;
+      setBusy(true);
+      try { await createNewFile(); } catch (error) { updateStatus(error.message, true); } finally { setBusy(false); }
+    });
+
+    elements.interpretMarkdown.addEventListener("click", async () => {
+      if (busy) return;
+      setBusy(true);
+      updateStatus("Interpretando texto...");
+      try {
+        const result = await interpretMarkdownContent();
+        fillForm(result.data);
+        if (!elements.automationFileName.value && result.suggestedFile) elements.automationFileName.value = result.suggestedFile;
+        updateStatus("Texto interpretado. Revise e clique em Salvar e Gerar.");
+      } catch (error) {
+        updateStatus(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    elements.automateMarkdown.addEventListener("click", async () => {
+      if (busy) return;
+      setBusy(true);
+      updateStatus("Automatizando briefing e gerando arquivos...");
+      try {
+        const result = await automateMarkdownContent();
+        await loadFileList(result.file);
+        setCurrentFile(result.file);
+        fillForm(result.data);
+        currentOutputPath = result.outputDir;
+        refreshPreview();
+        updateStatus(`Briefing ${result.file} automatizado com sucesso.`);
+      } catch (error) {
+        updateStatus(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    elements.briefingSelect.addEventListener("change", async (event) => {
+      if (busy) return;
+      setBusy(true);
+      try { await loadBriefingFile(event.target.value); } catch (error) { updateStatus(error.message, true); } finally { setBusy(false); }
+    });
+
+    document.getElementById("generate-button").addEventListener("click", async () => {
+      if (busy) return;
+      setBusy(true);
+      updateStatus("Salvando e gerando briefing...");
+      try {
+        await saveBriefing(collectData());
+        const generated = await generateBriefing(currentFile);
+        currentOutputPath = generated.outputDir;
+        refreshPreview();
+        updateStatus(`Briefing gerado com ${generated.pageCount || 4} páginas.`);
+      } catch (error) {
+        updateStatus(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    document.getElementById("briefing-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (busy) return;
+      setBusy(true);
+      updateStatus("Salvando briefing...");
+      try {
+        const saved = await saveBriefing(collectData());
+        fillForm(saved.data);
+        updateStatus("Briefing salvo. Clique em Salvar e Gerar para atualizar os arquivos.");
+      } catch (error) {
+        updateStatus(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    async function init() {
+      if (!ensureServerMode()) return;
+      setBusy(true);
+      try {
+        const selected = await loadFileList();
+        await loadBriefingFile(selected);
+        updateStatus("Pronto para automatizar.");
+      } catch (error) {
+        updateStatus(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

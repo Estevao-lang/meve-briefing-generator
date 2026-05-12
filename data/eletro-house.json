@@ -1,0 +1,97 @@
+{
+  "brand": {
+    "name": "Me Vê Um Site",
+    "website": "meveumsite.com.br",
+    "logoPath": "assets/logo.png",
+    "mainMessagePrefix": "Criamos sistemas personalizados para empresas que querem",
+    "mainMessageHighlight": "sair das planilhas, automatizar processos e crescer com mais controle."
+  },
+  "target": {
+    "name": "Eletro House Assistência Técnica",
+    "segment": "assistências técnicas",
+    "context": "A Eletro House presta manutenção e suporte técnico para clientes que precisam de atendimento rápido, organizado e confiável para seus equipamentos."
+  },
+  "cover": {
+    "titleLine1": "Briefing",
+    "titleLine2": "Comercial",
+    "subtitle": "Soluções Digitais para Eletro House Assistência Técnica",
+    "features": [
+      "Ordens de serviço",
+      "Área do cliente",
+      "Orçamentos",
+      "Dashboard"
+    ]
+  },
+  "about": {
+    "company": "Somos a Me Vê Um Site, uma software house especializada no desenvolvimento de soluções digitais para empresas. Criamos sistemas personalizados, dashboards, painéis administrativos, áreas do cliente, automações, integrações com APIs, plataformas web e sites profissionais.",
+    "objective": "Criar uma plataforma digital sob medida para organizar atendimentos, clientes, equipamentos, ordens de serviço, orçamentos, técnicos, pagamentos e status de manutenção em um único sistema.",
+    "pains": [
+      "Atendimentos espalhados no WhatsApp",
+      "Falta de controle sobre ordens de serviço",
+      "Dificuldade para acompanhar o status de cada equipamento",
+      "Orçamentos feitos manualmente",
+      "Falta de histórico dos clientes",
+      "Demora para responder clientes sobre o andamento do serviço"
+    ]
+  },
+  "modules": [
+    {
+      "title": "Cadastro de Clientes",
+      "description": "Registro de dados, contatos, histórico de atendimentos, equipamentos vinculados e observações internas em um único lugar.",
+      "icon": "users"
+    },
+    {
+      "title": "Cadastro de Equipamentos",
+      "description": "Controle de tipo, marca, modelo, número de série, defeito informado, fotos, acessórios e data de entrada na assistência.",
+      "icon": "building"
+    },
+    {
+      "title": "Ordem de Serviço",
+      "description": "Criação de OS com cliente, equipamento, diagnóstico técnico, peças necessárias, valor, técnico responsável, status e prazo previsto.",
+      "icon": "file"
+    },
+    {
+      "title": "Controle de Status",
+      "description": "Acompanhamento de cada etapa do serviço: recebido, em análise, orçamento enviado, aprovado, em manutenção, finalizado, entregue ou cancelado.",
+      "icon": "gear"
+    },
+    {
+      "title": "Geração de Orçamentos",
+      "description": "Criação de orçamentos profissionais com descrição do serviço, mão de obra, peças, prazo, condições de pagamento e aprovação do cliente.",
+      "icon": "target"
+    },
+    {
+      "title": "Painel Administrativo",
+      "description": "Indicadores de OS abertas, serviços em andamento, finalizados, orçamentos pendentes, receita prevista, receita recebida e técnicos mais ativos.",
+      "icon": "chart"
+    },
+    {
+      "title": "Área do Cliente",
+      "description": "Consulta por número da OS, status atual, orçamento disponível, informações de pagamento e previsão de entrega.",
+      "icon": "users"
+    }
+  ],
+  "benefits": [
+    "Centralizar atendimentos em um único lugar",
+    "Organizar clientes, equipamentos e ordens de serviço",
+    "Reduzir erros causados por controles manuais",
+    "Melhorar a comunicação com o cliente",
+    "Gerar orçamentos mais profissionais",
+    "Ter relatórios claros da operação"
+  ],
+  "mvp": [
+    "Cadastro de clientes",
+    "Cadastro de equipamentos",
+    "Ordem de serviço",
+    "Controle de status",
+    "Geração de orçamento",
+    "Dashboard administrativo básico",
+    "Consulta simples para o cliente acompanhar o serviço"
+  ],
+  "proposal": {
+    "modulesSubtitle": "Solução sob medida para assistências técnicas",
+    "closingQuote": "Não criamos apenas sites. Criamos soluções digitais para empresas venderem mais, organizarem processos e crescerem com tecnologia.",
+    "ctaLead": "Vamos transformar sua operação manual",
+    "ctaHighlight": "em uma plataforma organizada, moderna e sob medida?"
+  }
+}
