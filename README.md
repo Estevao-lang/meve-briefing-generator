@@ -156,3 +156,50 @@ Arquivos finais do briefing padrão:
 - `dist/briefing-page-1.png` até `dist/briefing-page-4.png`
 
 Quando gerado pelo editor, o output fica em uma subpasta de `dist/` com o mesmo nome do JSON, por exemplo `dist/briefing/`.
+
+## Deploy No Render
+
+O projeto já tem `render.yaml`, então você pode subir por Blueprint ou criar um Web Service manualmente.
+
+### Opção 1: Blueprint
+
+1. Suba este projeto para um repositório no GitHub.
+2. No Render, clique em `New` > `Blueprint`.
+3. Conecte o repositório.
+4. Confirme o arquivo `render.yaml`.
+5. Em `Environment`, preencha `GROQ_API_KEY` se quiser usar IA. Sem essa chave, o parser local continua funcionando.
+
+### Opção 2: Web Service Manual
+
+Use estes campos no Render:
+
+```text
+Service Type: Web Service
+Runtime: Node
+Build Command: npm run render-build
+Start Command: npm start
+Health Check Path: /healthz
+```
+
+Variáveis de ambiente recomendadas:
+
+```env
+NODE_ENV=production
+PLAYWRIGHT_BROWSERS_PATH=0
+GROQ_API_KEY=sua_chave_opcional
+GROQ_MODEL=llama-3.1-8b-instant
+```
+
+Não defina `PORT` manualmente no Render. O próprio Render fornece essa variável, e o servidor já usa `process.env.PORT`.
+
+### Persistência Dos Briefings
+
+Por padrão, o filesystem do Render é temporário. O app funciona, gera PDF/PNG e salva JSON, mas esses arquivos podem ser perdidos quando o serviço reiniciar ou fizer redeploy.
+
+Para preservar os briefings, use um plano com Persistent Disk e configure:
+
+```env
+BRIEFING_STORAGE_DIR=/opt/render/project/src/storage
+```
+
+Monte o disco nesse mesmo caminho. O servidor copia os JSONs iniciais para esse diretório na primeira inicialização.

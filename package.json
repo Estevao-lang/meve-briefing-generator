@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22 <25"
+  },
   "description": "Automatizador de briefing comercial em JSON, HTML, PDF e PNG para a Me Vê Um Site.",
   "scripts": {
     "dev": "node scripts/editor-server.mjs",
     "start": "node scripts/editor-server.mjs",
+    "render-build": "npm ci && npx playwright install chromium",
     "generate": "node scripts/generate-briefing.mjs",
     "generate:custom": "node scripts/generate-briefing.mjs --data data/briefing.json --out dist",
     "automate": "node scripts/automate-briefing.mjs",

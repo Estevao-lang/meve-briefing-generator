@@ -13,10 +13,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, "..");
 const publicDir = path.join(root, "public");
-const dataDir = path.join(root, "data");
+const storageRoot = process.env.BRIEFING_STORAGE_DIR ? path.resolve(process.env.BRIEFING_STORAGE_DIR) : root;
+const seedDataDir = path.join(root, "data");
+const dataDir = process.env.BRIEFING_DATA_DIR ? path.resolve(process.env.BRIEFING_DATA_DIR) : path.join(storageRoot, "data");
 const defaultDataFile = "briefing.json";
-const distDir = path.join(root, "dist");
+const distDir = process.env.BRIEFING_DIST_DIR ? path.resolve(process.env.BRIEFING_DIST_DIR) : path.join(storageRoot, "dist");
 const port = Number(process.env.PORT) || 3000;
+const host = process.env.HOST || "0.0.0.0";
 const maxBodyBytes = 1_500_000;
 
 function getDataFilePath(file = defaultDataFile) {
@@ -52,11 +55,34 @@ function outputPayload(outputDir) {
 }
 
 async function listBriefingFiles() {
+  await fs.mkdir(dataDir, { recursive: true });
   const entries = await fs.readdir(dataDir, { withFileTypes: true });
   return entries
     .filter((entry) => entry.isFile() && /^[a-zA-Z0-9][a-zA-Z0-9._-]*\.json$/.test(entry.name))
     .map((entry) => entry.name)
     .sort((a, b) => a.localeCompare(b, "pt-BR"));
+}
+
+function isInsideDirectory(baseDir, targetPath) {
+  const relative = path.relative(baseDir, path.resolve(targetPath));
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+}
+
+async function copySeedDataIfNeeded() {
+  await fs.mkdir(dataDir, { recursive: true });
+  await fs.mkdir(distDir, { recursive: true });
+
+  if (path.resolve(dataDir) === path.resolve(seedDataDir)) return;
+
+  const existingFiles = await fs.readdir(dataDir);
+  if (existingFiles.some((file) => file.endsWith(".json"))) return;
+
+  const seedFiles = await fs.readdir(seedDataDir, { withFileTypes: true });
+  await Promise.all(
+    seedFiles
+      .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+      .map((entry) => fs.copyFile(path.join(seedDataDir, entry.name), path.join(dataDir, entry.name)))
+  );
 }
 
 const contentTypes = {
@@ -208,8 +234,27 @@ async function handleApi(req, res) {
 
 async function requestListener(req, res) {
   const requestUrl = new URL(req.url, `http://localhost:${port}`);
+
+  if (req.method === "GET" && requestUrl.pathname === "/healthz") {
+    sendJson(res, 200, { ok: true });
+    return;
+  }
+
   if (requestUrl.pathname.startsWith("/api/")) {
     await handleApi(req, res);
+    return;
+  }
+
+  if (requestUrl.pathname.startsWith("/dist/")) {
+    const relativeDistPath = decodeURIComponent(requestUrl.pathname.slice("/dist/".length));
+    const distFilePath = path.resolve(distDir, relativeDistPath);
+    if (!isInsideDirectory(distDir, distFilePath)) {
+      res.writeHead(403, { "Content-Type": "text/plain; charset=UTF-8" });
+      res.end("Acesso proibido");
+      return;
+    }
+
+    await serveFile(res, distFilePath);
     return;
   }
 
@@ -219,8 +264,7 @@ async function requestListener(req, res) {
       : path.join(root, decodeURIComponent(requestUrl.pathname.slice(1)));
 
   const normalizedPath = path.resolve(filePath);
-  const relative = path.relative(root, normalizedPath);
-  if (relative.startsWith("..") || path.isAbsolute(relative)) {
+  if (!isInsideDirectory(root, normalizedPath)) {
     res.writeHead(403, { "Content-Type": "text/plain; charset=UTF-8" });
     res.end("Acesso proibido");
     return;
@@ -241,8 +285,8 @@ function createServer() {
 function startServer(listenPort, attemptsLeft = 5) {
   const server = createServer();
 
-  server.listen(listenPort, () => {
-    console.log(`Editor de briefing disponível em http://localhost:${listenPort}`);
+  server.listen(listenPort, host, () => {
+    console.log(`Editor de briefing disponível em http://${host}:${listenPort}`);
     console.log("Use o editor para colar texto, automatizar o briefing e gerar PDF/PNG.");
   });
 
@@ -257,4 +301,5 @@ function startServer(listenPort, attemptsLeft = 5) {
   });
 }
 
+await copySeedDataIfNeeded();
 startServer(port);
