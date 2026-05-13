@@ -8,6 +8,7 @@ export function parseMarkdownToBriefing(markdown = "") {
   let subsection = "";
   let currentModule = null;
   let pendingText = "";
+  let headingCount = 0;
 
   const pushPendingText = () => {
     const text = pendingText.trim();
@@ -33,7 +34,7 @@ export function parseMarkdownToBriefing(markdown = "") {
   };
 
   const addModule = (title, description = "") => {
-    const cleanTitle = stripNumberPrefix(title);
+    const cleanTitle = simplifyModuleTitle(stripNumberPrefix(title));
     if (!cleanTitle) return null;
     currentModule = { title: cleanTitle, description, icon: suggestIcon(cleanTitle) };
     data.modules.push(currentModule);
@@ -52,17 +53,30 @@ export function parseMarkdownToBriefing(markdown = "") {
       pushPendingText();
       const level = headingMatch[1].length;
       const heading = cleanMarkdownInline(headingMatch[2]);
+      const mappedSection = mapHeadingSection(heading);
+      headingCount += 1;
 
       if (level === 1) {
-        applyTargetText(data, heading);
-        section = "cover";
-        subsection = "";
+        if (headingCount === 1) applyTargetText(data, heading);
+        section = mappedSection || (headingCount === 1 ? "cover" : section);
+        subsection = section === "about" && matchesAny(heading, ["oportunidade", "objetivo", "cenario", "cenÃ¡rio"]) ? "objetivo" : "";
+        if (section === "about" && matchesAny(heading, ["entendimento", "cenario", "cenário", "problemas", "dores"])) subsection = "dores";
         currentModule = null;
         continue;
       }
 
       if (level === 2) {
-        section = normalizeSection(heading);
+        if (section === "modules" && looksLikeModuleHeading(heading)) {
+          addModule(heading);
+          subsection = "";
+          continue;
+        }
+
+        if (!data.cover.subtitle && matchesAny(heading, ["solucoes digitais", "soluÃ§Ãµes digitais"])) {
+          data.cover.subtitle = cleanMarkdownInline(heading);
+        }
+
+        section = mappedSection || section;
         subsection = "";
         currentModule = null;
         continue;
@@ -175,7 +189,7 @@ function autoCompleteBriefing(data, sourceText = "") {
   const segment = data.target.segment || "empresas que precisam organizar processos com tecnologia";
 
   if (!data.cover.subtitle) data.cover.subtitle = `Soluções Digitais para ${targetName}`;
-  if (!data.cover.features.length) data.cover.features.push("Sistema sob medida", "Automação", "Dashboard", "Integrações");
+  if (!data.cover.features.length) data.cover.features.push(...suggestCoverFeaturesFromDraft(data));
 
   if (!data.about.objective) {
     data.about.objective = `Criar uma solução digital sob medida para ${segment}, com foco em organização, automação, integração de ferramentas e controle da operação.`;
@@ -223,6 +237,41 @@ function normalizeSection(text) {
   if (matchesAny(value, ["mvp", "primeira versao", "primeira versão", "fase 1", "proximos passos"])) return "mvp";
   if (matchesAny(value, ["proposta", "fechamento", "cta", "mensagem"])) return "proposal";
   return value;
+}
+
+function mapHeadingSection(text) {
+  const value = normalize(text);
+  if (matchesAny(value, ["cliente", "negocio", "empresa alvo", "segmento", "contexto"])) return "target";
+  if (matchesAny(value, ["marca", "me ve um site", "quem somos", "sobre a me ve"])) return "about";
+  if (matchesAny(value, ["capa", "cover", "resumo"])) return "cover";
+  if (matchesAny(value, ["entendimento", "cenario", "principal oportunidade", "objetivo", "dores", "problemas"])) return "about";
+  if (matchesAny(value, ["solucoes digitais recomendadas", "solucao ideal", "recomendadas", "modulos", "funcionalidades", "escopo", "plataforma digital"])) return "modules";
+  if (matchesAny(value, ["beneficios", "ganhos", "resultados", "diferencial estrategico"])) return "benefits";
+  if (matchesAny(value, ["mvp", "fase", "proximos passos", "fluxo sugerido"])) return "mvp";
+  if (matchesAny(value, ["proposta", "fechamento", "cta", "mensagem", "conclusao"])) return "proposal";
+  if (matchesAny(value, ["briefing comercial"])) return "cover";
+  return "";
+}
+
+function suggestCoverFeaturesFromDraft(data) {
+  const source = [
+    ...(data.modules || []).map((module) => module.title),
+    ...(data.mvp || []),
+    data.target?.segment || "",
+  ].join(" ");
+  const features = [];
+  const add = (condition, label) => {
+    if (condition && !features.includes(label)) features.push(label);
+  };
+
+  add(matchesAny(source, ["site", "landing"]), "Site profissional");
+  add(matchesAny(source, ["agenda", "agendamento", "consulta"]), "Agendamento");
+  add(matchesAny(source, ["crm", "lead", "paciente", "cliente"]), "CRM de clientes");
+  add(matchesAny(source, ["whatsapp", "automacao", "automação", "mensagem"]), "Automações");
+  add(matchesAny(source, ["dashboard", "painel", "relatorio", "relatório"]), "Dashboard");
+  add(matchesAny(source, ["integracao", "integração", "api", "formulario", "formulário"]), "Integrações");
+
+  return features.length ? features.slice(0, 4) : ["Sistema sob medida", "Automação", "Dashboard", "Integrações"];
 }
 
 function applyKeyValue(data, section, currentModule, rawKey, rawValue) {
@@ -303,25 +352,71 @@ function applyListItem(data, section, subsection, currentModule, value, addModul
   else if (section === "mvp") data.mvp.push(value);
 }
 
+function looksLikeModuleHeading(value = "") {
+  const text = normalize(value);
+  if (/^\d+[.)-]?\s+/.test(String(value).trim())) return true;
+  return matchesAny(text, [
+    "site",
+    "landing",
+    "agenda",
+    "agendamento",
+    "crm",
+    "whatsapp",
+    "area do paciente",
+    "painel",
+    "dashboard",
+    "acompanhamento",
+    "integracao",
+    "formulario",
+  ]);
+}
+
 function applyTargetText(data, text) {
-  const clean = stripNumberPrefix(text);
+  const clean = extractTargetName(text) || stripNumberPrefix(text);
   if (!clean || isMeVeText(clean)) return;
   data.target.name ||= clean;
   data.cover.subtitle ||= `Soluções Digitais para ${clean}`;
 }
 
+function extractTargetName(text = "") {
+  const clean = stripNumberPrefix(text);
+  const directParaMatch = clean.match(/\bpara\s+(.+)$/i);
+  if (directParaMatch && matchesAny(clean, ["briefing comercial", "me v", "me ve", "me vê"])) {
+    const directValue = cleanMarkdownInline(directParaMatch[1]).replace(/[.:;,-]+$/g, "").trim();
+    if (directValue && !isGenericTargetText(directValue) && !isMeVeText(directValue)) return directValue;
+  }
+
+  const patterns = [
+    /me\s+v[eê]\s+um\s+site\s+para\s+(.+)$/i,
+    /briefing\s+comercial\s*[-–—]\s*(?:me\s+v[eê]\s+um\s+site\s+para\s+)?(.+)$/i,
+    /\bpara\s+([A-ZÀ-Ú][\p{L}\p{N}&' .-]{2,})$/u,
+  ];
+
+  for (const pattern of patterns) {
+    const match = clean.match(pattern);
+    const value = match?.[1] ? cleanMarkdownInline(match[1]).replace(/[.:;,-]+$/g, "").trim() : "";
+    if (value && !isGenericTargetText(value) && !isMeVeText(value)) return value;
+  }
+
+  if (isGenericTargetText(clean) || clean.length > 70) return "";
+  return clean;
+}
+
 function inferTargetFromText(sourceText = "") {
   const text = toPlainText(sourceText);
   const firstHeading = String(sourceText).match(/^#\s+(.+)$/m)?.[1]?.trim();
-  const name = firstHeading && !isMeVeText(firstHeading) ? cleanMarkdownInline(firstHeading) : "";
+  const name = firstHeading && !isMeVeText(firstHeading) ? extractTargetName(firstHeading) : "";
 
   const lower = normalize(text);
   let segment = "";
+  if (matchesAny(lower, ["odontologia", "odontologica", "odontologico", "dentista", "invisalign"])) segment = "clínicas odontológicas";
   if (matchesAny(lower, ["assistencia tecnica", "assistência técnica", "ordem de servico", "ordem de serviço"])) segment = "assistências técnicas";
   else if (matchesAny(lower, ["clinica", "clínica", "paciente", "consulta"])) segment = "clínicas e consultórios";
   else if (matchesAny(lower, ["restaurante", "delivery", "cardapio", "cardápio"])) segment = "restaurantes e operações de delivery";
   else if (matchesAny(lower, ["imobiliaria", "imobiliária", "imovel", "imóvel"])) segment = "imobiliárias";
   else if (matchesAny(lower, ["loja", "estoque", "pedido", "e-commerce", "catalogo", "catálogo"])) segment = "comércios e lojas em crescimento";
+
+  if (matchesAny(lower, ["odontologia", "odontologica", "odontologico", "dentista", "invisalign"])) segment = "clínicas odontológicas";
 
   return { name, segment };
 }
@@ -397,6 +492,20 @@ function stripNumberPrefix(value = "") {
   return cleanMarkdownInline(value).replace(/^\d+[.)-]?\s*/, "").trim();
 }
 
+function simplifyModuleTitle(value = "") {
+  const text = normalize(value);
+  if (matchesAny(text, ["site profissional", "site institucional"])) return "Site Profissional";
+  if (matchesAny(text, ["landing page", "pagina de campanha", "página de campanha"])) return "Landing Page";
+  if (matchesAny(text, ["agendamento", "agenda"])) return "Agendamento Inteligente";
+  if (matchesAny(text, ["crm", "leads"])) return "CRM de Leads";
+  if (matchesAny(text, ["whatsapp", "automacao", "automação", "mensagens"])) return "Automação de WhatsApp";
+  if (matchesAny(text, ["area do paciente", "área do paciente", "portal do paciente"])) return "Área do Paciente";
+  if (matchesAny(text, ["painel", "dashboard", "administrativo"])) return "Painel Administrativo";
+  if (matchesAny(text, ["acompanhamento", "tratamento"])) return "Acompanhamento de Tratamentos";
+  if (matchesAny(text, ["integracao", "integração", "api", "formulario", "formulário"])) return "Integrações";
+  return value;
+}
+
 function suggestIcon(value = "") {
   const text = normalize(value);
   if (matchesAny(text, ["cliente", "usuario", "usuário", "atendimento", "area"])) return "users";
@@ -406,6 +515,20 @@ function suggestIcon(value = "") {
   if (matchesAny(text, ["obra", "imovel", "imóvel", "empresa", "unidade", "site", "landing"])) return "building";
   if (matchesAny(text, ["crescimento", "venda", "produto", "plataforma"])) return "rocket";
   return "target";
+}
+
+function isGenericTargetText(value = "") {
+  return matchesAny(value, [
+    "briefing comercial",
+    "solucoes digitais",
+    "soluções digitais",
+    "clinicas que querem",
+    "clínicas que querem",
+    "empresas que querem",
+    "principal oportunidade",
+    "entendimento do cenario",
+    "entendimento do cenário",
+  ]);
 }
 
 function isMeVeText(value = "") {

@@ -1,5 +1,26 @@
 export const ICON_NAMES = ["users", "building", "file", "chart", "target", "gear", "hardhat", "rocket"];
 
+const OUTPUT_LIMITS = {
+  coverFeatures: 4,
+  pains: 6,
+  modules: 6,
+  benefits: 6,
+  mvp: 6,
+  featureChars: 32,
+  painChars: 64,
+  moduleTitleChars: 34,
+  moduleDescriptionChars: 118,
+  benefitChars: 68,
+  mvpChars: 62,
+  subtitleChars: 78,
+  companyChars: 330,
+  objectiveChars: 260,
+  modulesSubtitleChars: 105,
+  closingQuoteChars: 180,
+  ctaLeadChars: 52,
+  ctaHighlightChars: 64,
+};
+
 export const DEFAULT_BRIEFING = {
   brand: {
     name: "Me Vê Um Site",
@@ -132,8 +153,8 @@ export function prepareData(data = {}) {
   const cover = {
     titleLine1: asString(data.cover?.titleLine1, DEFAULT_BRIEFING.cover.titleLine1),
     titleLine2: asString(data.cover?.titleLine2, DEFAULT_BRIEFING.cover.titleLine2),
-    subtitle: asString(data.cover?.subtitle, DEFAULT_BRIEFING.cover.subtitle),
-    features: asTextArray(data.cover?.features, DEFAULT_BRIEFING.cover.features),
+    subtitle: clampText(asString(data.cover?.subtitle, DEFAULT_BRIEFING.cover.subtitle), OUTPUT_LIMITS.subtitleChars),
+    features: normalizeCoverFeatures(data.cover?.features),
   };
 
   const target = {
@@ -143,14 +164,14 @@ export function prepareData(data = {}) {
   };
 
   const about = {
-    company: asString(data.about?.company, DEFAULT_BRIEFING.about.company),
-    objective: asString(data.about?.objective, DEFAULT_BRIEFING.about.objective),
-    pains: asTextArray(data.about?.pains, DEFAULT_BRIEFING.about.pains),
+    company: clampText(asString(data.about?.company, DEFAULT_BRIEFING.about.company), OUTPUT_LIMITS.companyChars),
+    objective: clampText(asString(data.about?.objective, DEFAULT_BRIEFING.about.objective), OUTPUT_LIMITS.objectiveChars),
+    pains: normalizeTextArray(data.about?.pains, DEFAULT_BRIEFING.about.pains, OUTPUT_LIMITS.pains, OUTPUT_LIMITS.painChars),
   };
 
   const modules = normalizeModules(data.modules);
-  const benefits = asTextArray(data.benefits, DEFAULT_BRIEFING.benefits);
-  const mvp = asTextArray(data.mvp, DEFAULT_BRIEFING.mvp);
+  const benefits = normalizeTextArray(data.benefits, DEFAULT_BRIEFING.benefits, OUTPUT_LIMITS.benefits, OUTPUT_LIMITS.benefitChars);
+  const mvp = normalizeTextArray(data.mvp, DEFAULT_BRIEFING.mvp, OUTPUT_LIMITS.mvp, OUTPUT_LIMITS.mvpChars);
 
   const proposalDefaults = {
     modulesSubtitle: `Solução sob medida para ${target.segment}`,
@@ -160,10 +181,10 @@ export function prepareData(data = {}) {
   };
 
   const proposal = {
-    modulesSubtitle: asString(data.proposal?.modulesSubtitle, proposalDefaults.modulesSubtitle),
-    closingQuote: asString(data.proposal?.closingQuote, proposalDefaults.closingQuote),
-    ctaLead: asString(data.proposal?.ctaLead, proposalDefaults.ctaLead),
-    ctaHighlight: asString(data.proposal?.ctaHighlight, proposalDefaults.ctaHighlight),
+    modulesSubtitle: clampText(asString(data.proposal?.modulesSubtitle, proposalDefaults.modulesSubtitle), OUTPUT_LIMITS.modulesSubtitleChars),
+    closingQuote: clampText(asString(data.proposal?.closingQuote, proposalDefaults.closingQuote), OUTPUT_LIMITS.closingQuoteChars),
+    ctaLead: clampText(asString(data.proposal?.ctaLead, proposalDefaults.ctaLead), OUTPUT_LIMITS.ctaLeadChars),
+    ctaHighlight: clampText(asString(data.proposal?.ctaHighlight, proposalDefaults.ctaHighlight), OUTPUT_LIMITS.ctaHighlightChars),
   };
 
   return { brand, target, cover, about, modules, benefits, mvp, proposal };
@@ -201,7 +222,11 @@ function normalizeModules(value) {
     }))
     .filter((module) => module.title || module.description);
 
-  return modules.length ? modules : DEFAULT_BRIEFING.modules;
+  return modules.length ? modules.slice(0, OUTPUT_LIMITS.modules).map((module) => ({
+    ...module,
+    title: clampText(module.title, OUTPUT_LIMITS.moduleTitleChars),
+    description: clampText(module.description, OUTPUT_LIMITS.moduleDescriptionChars),
+  })) : DEFAULT_BRIEFING.modules;
 }
 
 function normalizeIcon(value, fallback = "target") {
@@ -218,6 +243,84 @@ function asTextArray(value, fallback = []) {
   const source = Array.isArray(value) ? value : typeof value === "string" ? value.split(/\n|;|•/g) : [];
   const items = source.map((item) => String(item).replace(/^[-*+]\s*/, "").trim()).filter(Boolean);
   return items.length ? items : fallback;
+}
+
+function normalizeCoverFeatures(value) {
+  const items = uniqueTextArray(asTextArray(value, DEFAULT_BRIEFING.cover.features));
+  if (items.length > 8) {
+    const suggested = suggestCoverFeatures(items);
+    if (suggested.length) return suggested.slice(0, OUTPUT_LIMITS.coverFeatures);
+  }
+
+  return items
+    .map((item) => clampText(item, OUTPUT_LIMITS.featureChars))
+    .filter(Boolean)
+    .slice(0, OUTPUT_LIMITS.coverFeatures);
+}
+
+function suggestCoverFeatures(items = []) {
+  const text = normalize(items.join(" "));
+  const features = [];
+  const add = (condition, label) => {
+    if (condition && !features.includes(label)) features.push(label);
+  };
+
+  add(matchesAny(text, ["site", "landing", "presenca digital", "presença digital"]), "Site profissional");
+  add(matchesAny(text, ["agenda", "agendamento", "consulta", "horario", "horário"]), "Agendamento");
+  add(matchesAny(text, ["crm", "lead", "paciente", "cliente", "funil"]), "CRM de clientes");
+  add(matchesAny(text, ["whatsapp", "automacao", "automação", "mensagem", "lembrete"]), "Automações");
+  add(matchesAny(text, ["dashboard", "painel", "relatorio", "relatório", "indicador"]), "Dashboard");
+  add(matchesAny(text, ["integracao", "integração", "api", "planilha", "formulario", "formulário"]), "Integrações");
+
+  return features.length ? features : [...DEFAULT_BRIEFING.cover.features];
+}
+
+function normalizeTextArray(value, fallback, maxItems, maxChars) {
+  return uniqueTextArray(asTextArray(value, fallback))
+    .map((item) => clampText(item, maxChars))
+    .filter(Boolean)
+    .slice(0, maxItems);
+}
+
+function uniqueTextArray(items = []) {
+  const seen = new Set();
+  const output = [];
+  for (const item of items) {
+    const text = compactWhitespace(item);
+    const key = normalize(text);
+    if (!text || seen.has(key)) continue;
+    seen.add(key);
+    output.push(text);
+  }
+  return output;
+}
+
+function clampText(value = "", maxLength = 120) {
+  const text = compactWhitespace(value);
+  if (text.length <= maxLength) return text;
+
+  const hardLimit = Math.max(20, maxLength - 1);
+  const slice = text.slice(0, hardLimit);
+  const lastSpace = slice.lastIndexOf(" ");
+  const clipped = (lastSpace > 24 ? slice.slice(0, lastSpace) : slice).replace(/[,:;.\-\s]+$/g, "");
+  return `${clipped}…`;
+}
+
+function compactWhitespace(value = "") {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function normalize(value = "") {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function matchesAny(value, needles) {
+  const text = normalize(value);
+  return needles.some((needle) => text.includes(normalize(needle)));
 }
 
 function deepMerge(base, override) {
