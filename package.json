@@ -10,7 +10,9 @@
   "scripts": {
     "dev": "node scripts/editor-server.mjs",
     "start": "node scripts/editor-server.mjs",
-    "render-build": "npm ci && npx playwright install chromium",
+    "postinstall": "npm run playwright:install",
+    "playwright:install": "npx playwright install chromium",
+    "render-build": "npm ci && npm run playwright:install",
     "generate": "node scripts/generate-briefing.mjs",
     "generate:custom": "node scripts/generate-briefing.mjs --data data/briefing.json --out dist",
     "automate": "node scripts/automate-briefing.mjs",

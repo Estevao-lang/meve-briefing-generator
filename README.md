@@ -192,6 +192,26 @@ GROQ_MODEL=llama-3.1-8b-instant
 
 Não defina `PORT` manualmente no Render. O próprio Render fornece essa variável, e o servidor já usa `process.env.PORT`.
 
+### Erro Do Playwright No Render
+
+Se aparecer o erro:
+
+```text
+browserType.launch: Executable doesn't exist
+Please run: npx playwright install
+```
+
+confira no Render:
+
+```text
+Build Command: npm run render-build
+PLAYWRIGHT_BROWSERS_PATH=0
+```
+
+Depois rode `Manual Deploy` > `Clear build cache & deploy`.
+
+O projeto também tem `postinstall`, então qualquer `npm install`/`npm ci` baixa o Chromium automaticamente.
+
 ### Persistência Dos Briefings
 
 Por padrão, o filesystem do Render é temporário. O app funciona, gera PDF/PNG e salva JSON, mas esses arquivos podem ser perdidos quando o serviço reiniciar ou fizer redeploy.
