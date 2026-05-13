@@ -1,0 +1,91 @@
+{
+  "brand": {
+    "name": "Me Vê Um Site",
+    "website": "meveumsite.com.br",
+    "logoPath": "assets/logo.png",
+    "mainMessagePrefix": "Criamos sistemas personalizados para empresas que querem",
+    "mainMessageHighlight": "sair das planilhas, automatizar processos e crescer com mais controle."
+  },
+  "target": {
+    "name": "ORPACO - Organização Paulista de Contabilidade",
+    "segment": "Accounting Firms",
+    "context": "Empresa encontrada pelo LeadFinder para receber uma abordagem comercial da Me Vê Um Site. Criar um briefing personalizado oferecendo site profissional, sistema web, automações, dashboard e organização operacional conforme o segmento."
+  },
+  "cover": {
+    "titleLine1": "Briefing",
+    "titleLine2": "Comercial",
+    "subtitle": "Soluções Digitais para ORPACO - Organização Paulista de Contabilidade",
+    "features": [
+      "Sistema sob medida",
+      "Automação",
+      "Dashboard",
+      "Integrações"
+    ]
+  },
+  "about": {
+    "company": "Somos a Me Vê Um Site, uma software house especializada no desenvolvimento de soluções digitais para empresas. Criamos sistemas personalizados, dashboards, painéis administrativos, áreas do cliente, automações, integrações com APIs, plataformas web e sites profissionais.",
+    "objective": "Criar uma solução digital sob medida para Accounting Firms, com foco em organização, automação, integração de ferramentas e controle da operação.",
+    "pains": [
+      "Uso excessivo de planilhas",
+      "Processos manuais e repetitivos",
+      "Falta de organização interna",
+      "Dificuldade para acompanhar dados e indicadores",
+      "Necessidade de automatizar tarefas",
+      "Ferramentas separadas sem integração"
+    ]
+  },
+  "modules": [
+    {
+      "title": "Sistema Web Personalizado",
+      "description": "Desenvolvimento de uma plataforma sob medida para centralizar processos, dados, usuários e regras do negócio.",
+      "icon": "users"
+    },
+    {
+      "title": "Dashboard e Painel Administrativo",
+      "description": "Indicadores, filtros, relatórios e visão gerencial para acompanhar a operação com mais clareza.",
+      "icon": "chart"
+    },
+    {
+      "title": "Área do Cliente",
+      "description": "Ambiente com login para clientes, funcionários ou parceiros consultarem informações, solicitações e status.",
+      "icon": "target"
+    },
+    {
+      "title": "Automações de Processos",
+      "description": "Automação de tarefas repetitivas para reduzir retrabalho, erros manuais e tempo gasto pela equipe.",
+      "icon": "gear"
+    },
+    {
+      "title": "Integrações com APIs",
+      "description": "Conexão com planilhas, bancos de dados, formulários, ferramentas externas e sistemas já usados pela empresa.",
+      "icon": "file"
+    },
+    {
+      "title": "Sites, Landing Pages e Catálogos",
+      "description": "Presença digital profissional para atrair leads, apresentar serviços, vender melhor e fortalecer a marca.",
+      "icon": "rocket"
+    }
+  ],
+  "benefits": [
+    "Organizar processos em uma solução centralizada",
+    "Reduzir retrabalho e tarefas manuais",
+    "Dar mais clareza para decisões com dashboards e indicadores",
+    "Melhorar atendimento, produtividade e controle da operação",
+    "Integrar ferramentas que hoje funcionam separadas",
+    "Criar uma base tecnológica escalável para crescimento"
+  ],
+  "mvp": [
+    "Diagnóstico do processo atual",
+    "Definição dos módulos essenciais",
+    "Protótipo do fluxo principal",
+    "Primeira versão funcional do sistema",
+    "Dashboard administrativo básico",
+    "Plano de evolução por fases"
+  ],
+  "proposal": {
+    "modulesSubtitle": "Solução sob medida para Accounting Firms",
+    "closingQuote": "Não criamos apenas sites. Criamos soluções digitais para empresas venderem mais, organizarem processos e crescerem com tecnologia.",
+    "ctaLead": "Vamos transformar processos manuais",
+    "ctaHighlight": "em uma solução digital moderna e personalizada?"
+  }
+}
