@@ -187,7 +187,28 @@ export function prepareData(data = {}) {
     ctaHighlight: clampText(asString(data.proposal?.ctaHighlight, proposalDefaults.ctaHighlight), OUTPUT_LIMITS.ctaHighlightChars),
   };
 
-  return { brand, target, cover, about, modules, benefits, mvp, proposal };
+  const investment = normalizeInvestment(data.investment);
+
+  return { brand, target, cover, about, modules, benefits, mvp, proposal, investment };
+}
+
+function normalizeInvestment(value) {
+  if (!value || !Array.isArray(value.tiers) || value.tiers.length === 0) return null;
+  const tiers = value.tiers.slice(0, 3).map((tier, index) => ({
+    name: asString(tier?.name, `Plano ${index + 1}`),
+    setup: asString(tier?.setup, ""),
+    monthly: asString(tier?.monthly, ""),
+    items: asTextArray(tier?.items, [])
+      .map((item) => compactWhitespace(item))
+      .filter(Boolean)
+      .slice(0, 6),
+    highlight: Boolean(tier?.highlight),
+  }));
+  return {
+    subtitle: clampText(asString(value.subtitle, "Planos pensados para o seu momento"), OUTPUT_LIMITS.modulesSubtitleChars),
+    tiers,
+    note: asString(value.note, ""),
+  };
 }
 
 export function inferSegment(value = "") {

@@ -83,6 +83,40 @@ function moduleCard(module) {
     </div>`;
 }
 
+function investmentTier(tier) {
+  const items = (tier.items || [])
+    .map((text) => `<li><span class="tick">${icon("target")}</span><span>${escapeHtml(text)}</span></li>`)
+    .join("");
+  const monthly = tier.monthly ? `<span class="inv-monthly">+ ${escapeHtml(tier.monthly)}</span>` : "";
+  const flag = tier.highlight ? `<div class="inv-flag">Mais escolhido</div>` : "";
+  return `
+    <div class="inv-card${tier.highlight ? " featured" : ""}">
+      ${flag}
+      <h3>${escapeHtml(tier.name)}</h3>
+      <div class="inv-price"><span class="inv-setup">${escapeHtml(tier.setup)}</span>${monthly}</div>
+      <ul class="inv-list">${items}</ul>
+    </div>`;
+}
+
+function investmentSection(data, logo) {
+  const inv = data.investment;
+  if (!inv || !Array.isArray(inv.tiers) || inv.tiers.length === 0) return "";
+  const cards = inv.tiers.map(investmentTier).join("");
+  const note = inv.note ? `<div class="inv-note">${escapeHtml(inv.note)}</div>` : "";
+  return `
+  <section class="page" id="page-5">
+    <div class="content">
+      <main class="page-main">
+      <div class="topbar"><img class="small-logo" src="${logo}" alt="${escapeHtml(data.brand.name)}" /><div class="page-badge">05</div></div>
+      <div class="modules-title"><h2>Investimento<span>e Planos</span></h2><p>${escapeHtml(inv.subtitle)}</p></div>
+      <div class="inv-grid">${cards}</div>
+      ${note}
+      </main>
+      <div class="footer"><b>${escapeHtml(data.brand.name)}</b><span class="divider"></span><span class="muted">Proposta personalizada</span><span class="divider"></span><span>${escapeHtml(data.brand.website)}</span></div>
+    </div>
+  </section>`;
+}
+
 export async function createHtml(rawData) {
   const data = prepareData(rawData);
   const logo = await assetUrl(data.brand.logoPath || "assets/logo.png");
@@ -257,6 +291,19 @@ export async function createHtml(rawData) {
     #page-4 .cta .icon-circle { width: 54px; height: 54px; }
     #page-4 .cta .icon-circle svg { width: 30px; height: 30px; }
     #page-4 .cta p { font-size: 23px; }
+    .inv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 12px; align-items: stretch; }
+    .inv-card { position: relative; border: 1px solid rgba(0, 204, 255, .55); border-radius: 8px; background: rgba(1, 15, 37, .78); padding: 26px 20px; display: flex; flex-direction: column; box-shadow: inset 0 0 45px rgba(0, 191, 255, .05); }
+    .inv-card.featured { border-color: #00d2ff; box-shadow: 0 0 34px rgba(0, 191, 255, .28), inset 0 0 50px rgba(0, 151, 255, .08); }
+    .inv-flag { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #00d7ff, #006dff); color: #021024; font-size: 12px; font-weight: 800; padding: 5px 14px; border-radius: 100px; white-space: nowrap; }
+    .inv-card h3 { font-size: 24px; font-weight: 850; margin-bottom: 14px; }
+    .inv-price { margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px solid rgba(0, 187, 255, .2); }
+    .inv-setup { display: block; font-size: 30px; font-weight: 900; color: #00caff; }
+    .inv-monthly { display: block; margin-top: 4px; font-size: 16px; color: #cfe9f7; }
+    .inv-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 11px; }
+    .inv-list li { display: flex; align-items: flex-start; gap: 11px; font-size: 15px; line-height: 1.3; color: #eefaff; }
+    .inv-list .tick { width: 26px; height: 26px; flex: 0 0 26px; display: grid; place-items: center; border-radius: 6px; border: 1px solid rgba(0, 203, 255, .35); background: rgba(0, 91, 190, .12); }
+    .inv-list .tick svg { width: 15px; height: 15px; }
+    .inv-note { margin-top: 20px; border: 1px solid rgba(0, 210, 255, .55); border-radius: 8px; background: rgba(0, 24, 58, .7); padding: 16px 22px; font-size: 16px; line-height: 1.35; color: #dff4ff; text-align: center; }
   </style>
 </head>
 <body>
@@ -303,7 +350,7 @@ export async function createHtml(rawData) {
   <section class="page" id="page-4">
     <div class="content">
       <main class="page-main">
-      <div class="topbar"><img class="small-logo" src="${logo}" alt="${escapeHtml(data.brand.name)}" /><div class="page-badge">4 / 4</div></div>
+      <div class="topbar"><img class="small-logo" src="${logo}" alt="${escapeHtml(data.brand.name)}" /><div class="page-badge">04</div></div>
       <div class="modules-title"><h2>Benefícios e<span>Próximos Passos</span></h2></div>
       <div class="benefits-layout">
         <div><div class="label"><span>1</span> Benefícios para a empresa:</div><ul class="benefit-list">${benefits}</ul></div>
@@ -315,6 +362,7 @@ export async function createHtml(rawData) {
       <div class="footer"><b>${escapeHtml(data.brand.name)}</b><span class="divider"></span><span class="muted">Sistemas personalizados • Automações • Sites profissionais</span><span class="divider"></span><span>${escapeHtml(data.brand.website)}</span></div>
     </div>
   </section>
+${investmentSection(data, logo)}
 </body>
 </html>`;
 }

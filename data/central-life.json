@@ -1,0 +1,133 @@
+{
+  "brand": {
+    "name": "Me Vê Um Site",
+    "website": "meveumsite.com.br",
+    "logoPath": "assets/logo.png",
+    "mainMessagePrefix": "Criamos soluções digitais para clínicas que querem",
+    "mainMessageHighlight": "atrair mais pacientes, organizar a agenda e reduzir faltas com tecnologia."
+  },
+  "target": {
+    "name": "Central Life",
+    "segment": "clínica",
+    "context": "Clínica que busca atrair mais pacientes, organizar a agenda e reduzir faltas, com presença digital profissional e processos automatizados."
+  },
+  "cover": {
+    "titleLine1": "Proposta",
+    "titleLine2": "Comercial",
+    "subtitle": "Soluções Digitais para a Central Life",
+    "features": [
+      "Site profissional",
+      "Agendamento online",
+      "CRM de pacientes",
+      "Automações"
+    ]
+  },
+  "about": {
+    "company": "Somos a Me Vê Um Site, especializada em soluções digitais para clínicas. Criamos sites profissionais, agendamento online, automações de lembrete, captação no Google e sistemas sob medida para organizar e crescer a operação.",
+    "objective": "Ajudar a Central Life a atrair mais pacientes, encher e organizar a agenda, reduzir faltas e profissionalizar a presença digital — com tecnologia sob medida para clínicas.",
+    "pains": [
+      "Captação de pacientes dependente de indicação",
+      "Agenda desorganizada entre telefone e WhatsApp",
+      "Faltas e remarcações de última hora",
+      "Sem presença digital profissional",
+      "Atendimento manual sobrecarrega a recepção",
+      "Pouca visão de quantos pacientes novos chegam"
+    ]
+  },
+  "modules": [
+    {
+      "title": "Site Profissional da Clínica",
+      "description": "Presença digital moderna que passa confiança, apresenta as especialidades e converte visitantes em pacientes.",
+      "icon": "rocket"
+    },
+    {
+      "title": "Agendamento Online",
+      "description": "O paciente marca a consulta sozinho, a qualquer hora, integrado à agenda da clínica — sem ocupar a recepção.",
+      "icon": "target"
+    },
+    {
+      "title": "Lembretes Automáticos",
+      "description": "Confirmação e lembrete por WhatsApp/e-mail que reduzem faltas e remarcações de última hora.",
+      "icon": "gear"
+    },
+    {
+      "title": "Captação no Google",
+      "description": "SEO local e campanhas para a clínica aparecer quando pacientes da região procuram seus serviços.",
+      "icon": "chart"
+    },
+    {
+      "title": "CRM de Pacientes",
+      "description": "Organização dos contatos e do funil de novos pacientes, do primeiro contato ao retorno.",
+      "icon": "users"
+    },
+    {
+      "title": "Integrações e Área do Paciente",
+      "description": "Conexão com as ferramentas que a clínica já usa e ambiente para o paciente acompanhar consultas.",
+      "icon": "file"
+    }
+  ],
+  "benefits": [
+    "Mais pacientes novos todos os meses",
+    "Agenda cheia e organizada em um só lugar",
+    "Menos faltas com lembretes automáticos",
+    "Recepção livre de tarefas manuais",
+    "Presença digital que transmite confiança",
+    "Dados claros de captação e retorno"
+  ],
+  "mvp": [
+    "Diagnóstico da captação e da agenda atual",
+    "Site profissional + Google local",
+    "Agendamento online integrado",
+    "Lembretes automáticos de consulta",
+    "Painel de acompanhamento",
+    "Plano de evolução por fases"
+  ],
+  "proposal": {
+    "modulesSubtitle": "Solução sob medida para a Central Life",
+    "closingQuote": "Não criamos apenas sites. Criamos a estrutura digital para a clínica atrair mais pacientes, organizar a agenda e crescer com previsibilidade.",
+    "ctaLead": "Vamos encher a agenda da Central Life",
+    "ctaHighlight": "com mais pacientes e menos trabalho manual?"
+  },
+  "investment": {
+    "subtitle": "Planos pensados para o momento da Central Life",
+    "tiers": [
+      {
+        "name": "Essencial",
+        "setup": "R$ 3.900",
+        "monthly": "R$ 390/mês",
+        "items": [
+          "Site profissional otimizado",
+          "Google local (SEO)",
+          "WhatsApp + agendamento integrado",
+          "Suporte e ajustes"
+        ]
+      },
+      {
+        "name": "Crescimento",
+        "setup": "R$ 8.900",
+        "monthly": "R$ 2.490/mês",
+        "highlight": true,
+        "items": [
+          "Tudo do Essencial",
+          "Agendamento online completo",
+          "Páginas de campanha",
+          "Gestão de tráfego pago (Google Ads)",
+          "Relatórios mensais"
+        ]
+      },
+      {
+        "name": "Performance",
+        "setup": "R$ 25.000+",
+        "monthly": "R$ 3.490/mês",
+        "items": [
+          "Sistema sob medida",
+          "Automação de lembretes (menos faltas)",
+          "Gestão de tráfego dedicada",
+          "Acompanhamento próximo",
+          "Prioridade no suporte"
+        ]
+      }
+    ],
+    "note": "Valores de referência — o plano final é montado conforme o diagnóstico da Central Life. A gestão de tráfego não inclui a verba de anúncios (paga direto à plataforma). Começamos por um MVP e evoluímos por fases."
+  }
+}
